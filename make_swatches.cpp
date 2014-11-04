@@ -13,6 +13,12 @@ struct rgb {
     out << red << "," << green << "," << blue;
     return out.str();
   }
+
+  std::string hex() const {
+    std::ostringstream out;
+    out << "#" << std::setfill('0') << std::hex << std::setw(6) << red << green << blue;
+    return out.str();
+  }
   
   int red;
   int green;
@@ -174,12 +180,12 @@ int main()
 
     boost::property_tree::ptree pt;
 
-    pt.add("palette.<xmlattr>.name","SVG Colors");
-    pt.add("palette.<xmlattr>.profile","sRGB");
+    pt.add("swatch.<xmlattr>.name","SVG Colors");
+    pt.add("swatch.<xmlattr>.profile","truecolor");
     
     for(const auto& color : colormap)
     {
-      boost::property_tree::ptree& clr = pt.add("palette.color","");
+      boost::property_tree::ptree& clr = pt.add("swatch.color","");
       clr.add("<xmlattr>.name",color.first);
       clr.add("<xmlattr>.rgb8",color.second.csv());
     }
