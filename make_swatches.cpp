@@ -2,13 +2,22 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/classification.hpp>
+
+inline std::string removeFront(const std::string inStr, const size_t remove)
+{
+  return inStr.substr(remove,inStr.length()-remove);
+}
 
 struct rgb {
     rgb(int r, int g, int b) : red(r), green(g), blue(b) {}
-    rgb(const std::string h) {
-
+    rgb(const char* h) {
+      fromHex(h);
     }
 
     std::string csv() const {
@@ -23,18 +32,37 @@ struct rgb {
         return out.str();
     }
 
-    void fromHex(const std::string) {
+    void fromHex(const std::string& h) {      
+      // if there is a starting #, remove it
+      std::string conv(h);
+      boost::trim_left_if(conv,boost::is_any_of("#"));
 
+      std::string out;
+      
+      if (conv.size()==3)
+	{
+	  std::transform(std::begin(conv),std::end(conv),std::begin(out),
+			 [](const char i){return i+i;});
+	}
+      else
+	{
+	  out = conv;
+	}
+      
+      // if there are only 3 chars, double them
+      // break into sets of 2
+      // assign those to characters
+      std::cout << conv << std::endl;
     }
 
-    int red;
-    int green;
-    int blue;
+    int red = 0;
+    int green = 0;
+    int blue = 0;
 };
 
 using ColorMap = std::map<std::string,rgb>;
 
-inline void writergb(const std::string name, const std::string desc, const std::string filen, const ColorMap& cmap) {
+inline void writergb(const std::string name, const std::string desc, const std::string filen, const ColorMap cmap) {
     boost::property_tree::ptree pt;
 
     pt.add("swatch.<xmlattr>.name",name);
@@ -52,27 +80,31 @@ inline void writergb(const std::string name, const std::string desc, const std::
             boost::property_tree::xml_writer_settings<std::string>(' ', 4));
 }
 
-/* VGA COLORS
-{White 	#FFFFFF
-{Silver 	#C0C0C0
-{Gray 	#808080
-{Black 	#000000
-{Red 	#FF0000
-{Maroon 	#800000
-{Yellow 	#FFFF00
-{Olive 	#808000
-{Lime 	#00FF00
-{Green 	#008000
-{Aqua 	#00FFFF
-{Teal 	#008080
-{Blue 	#0000FF
-{Navy 	#000080
-{Fuchsia #FF00FF
-{Purple #800080
-*/
-
 int main()
 {
+
+    writergb("VGA Colors","The named set of 16 colors popular in the early 1990s","vgacolors",
+    {
+        {"White","#FFF"},
+        {"Silver","#C0C0C0"},
+        {"Gray","#808080"},
+        {"Black","#000000"},
+        {"Red","#F00"},
+        {"Maroon","#800000"},
+        {"Yellow","#FFFF00"},
+        {"Olive","#808000"},
+        {"Lime","#00FF00"},
+        {"Green","#008000"},
+        {"Aqua","#00FFFF"},
+        {"Teal","#008080"},
+        {"Blue","#0000FF"},
+        {"Navy","#000080"},
+        {"Fuchsia","#FF00FF"},
+        {"Purple","#800080"}
+    });
+
+
+
     writergb("SVG colors","The standard palette of named colors for SVG","svgcolors",
     {
         {"aliceblue",{240, 248, 255}},
