@@ -9,11 +9,6 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
-inline std::string removeFront(const std::string inStr, const size_t remove)
-{
-  return inStr.substr(remove,inStr.length()-remove);
-}
-
 struct rgb {
     rgb(int r, int g, int b) : red(r), green(g), blue(b) {}
     rgb(const char* h) {
@@ -37,19 +32,16 @@ struct rgb {
       std::string conv(h);
       boost::trim_left_if(conv,boost::is_any_of("#"));
 
-      std::string out;
-      
-      if (conv.size()==3)
-	{
-	  std::transform(std::begin(conv),std::end(conv),std::begin(out),
-			 [](const char i){return i+i;});
-	}
-      else
-	{
-	  out = conv;
-	}
-      
       // if there are only 3 chars, double them
+      if (conv.size()==3)
+      {
+          std::ostringstream out;
+          std::for_each(std::begin(conv), std::end(conv),[&](const char i){
+              out << i << i;
+          });
+          conv = out.str();
+      }
+
       // break into sets of 2
       // assign those to characters
       std::cout << conv << std::endl;
@@ -62,7 +54,8 @@ struct rgb {
 
 using ColorMap = std::map<std::string,rgb>;
 
-inline void writergb(const std::string name, const std::string desc, const std::string filen, const ColorMap cmap) {
+inline void writergb(const std::string name, const std::string desc, const std::string filen, const ColorMap cmap)
+{
     boost::property_tree::ptree pt;
 
     pt.add("swatch.<xmlattr>.name",name);
